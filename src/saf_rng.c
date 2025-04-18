@@ -32,16 +32,18 @@ static inline uint64_t pcg_xsl_rr(uint64_t x){
 void saf_rng_seed(uint64_t seed){ s = seed; w = seed ^ INC; }
 
 /* 64‑bit salida – PractRand 1 GiB: no anomalies */
-int64_t saf_rng_u64(void){
-    s = tfunc(s);          /* paso T‑function                      */
-    w += INC;              /* Weyl                                 */
+/* 64‑bit – pasa PractRand core 1 GiB sin anomalías */
+uint64_t saf_rng_u64(void){
+    s = tfunc(s);        /* avance T‑function                */
+    w += INC;            /* avance Weyl                      */
 
-    uint64_t z = s + w;    /* SUMA ⇒ el bit 0 recibe acarreo       */
-    z  = smix(z);          /* 1ª difusión SplitMix64               */
-    z  = pcg_xsl_rr(z);    /* permutación PCG (rot‑rot)            */
+    uint64_t z = s + w;  /* acarreo rompe la alternancia del bit 0 */
+    z  = smix(z);        /* 1ª difusión SplitMix64           */
+    z  = pcg_xsl_rr(z);  /* permutación PCG xsl‑rr           */
 
-    z ^= z >> 1;           /* ← rompe la correlación residual del bit 0 */
-    return pcg_xsl_rr(z);  /* 2ª permuta: bit 0 completamente nuevo */
+    z ^= z >> 1;         /* copia bit 0 a posiciones altas   */
+    return pcg_xsl_rr(z);/* 2ª permuta  ⇒ 64 bits uniformes  */
+}                        /* ←  ¡cierra la función!           */
 
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
 float     saf_rng_f32(void){ return (saf_rng_u32() >> 8) * (1.0f/16777216.0f); }
