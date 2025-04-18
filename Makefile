@@ -9,3 +9,11 @@ bench: $(SRC) examples/bench.c $(HDR)
 .PHONY: clean
 clean:
 	rm -f bench
+
+gen: $(SRC) examples/gen.c $(HDR)
+	$(CC) $(CFLAGS) $^ -o $@
+
+practrand: gen
+	./gen 134217728 | RNG_test.exe stdin64 -multithreaded > practrand.log
+	@echo "PractRand finished. Summary:"
+	@tail -n 5 practrand.log
