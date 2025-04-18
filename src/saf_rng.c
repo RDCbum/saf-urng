@@ -16,16 +16,19 @@ static inline uint64_t splitmix(uint64_t z){
     return z ^ (z>>31);
 }
 
+static inline uint64_t pcg_permute(uint64_t x){
+    /* 64‑bit “xsl-rr”  – 32‑bit rotate of high × odd const */
+    return (x ^ (x >> 32)) * 0xDA942042E4DD58B5ULL >> 32 |
+           (x ^ (x >> 32)) * 0xDA942042E4DD58B5ULL << 32;
+}
+
 /* API -------------------------------------------------------------------- */
 void saf_rng_seed(uint64_t seed){ s=seed; w=seed^INC; }
 uint64_t saf_rng_u64(void){
     s = tfunc(s);
     w += INC;
-    uint64_t z = s ^ w;              /* mezcla cruda               */
-    z = splitmix(z);                 /* 1ª mezcla                  */
-    z ^= z >> 1;                     /* difunde bit 0 → bit 1      */
-    z ^= z >> 2;                     /* difunde bit 1 → bit 3      */
-    return splitmix(z);              /* 2ª mezcla                  */
+    uint64_t z = s ^ w;          /* mezcla cruda              */
+    return pcg_permute(z);       /* permutación final         */
 }
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
 float saf_rng_f32(void){ return (saf_rng_u32() >> 8) * (1.0f/16777216.0f); }
