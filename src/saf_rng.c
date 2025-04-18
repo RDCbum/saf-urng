@@ -25,3 +25,10 @@ uint64_t saf_rng_u64(void){
 }
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
 float saf_rng_f32(void){ return (saf_rng_u32() >> 8) * (1.0f/16777216.0f); }
+
+/* en src/saf_rng.c */
+uint64_t saf_rng_u64(void){
+    s = tfunc(s);
+    w += INC;
+    return splitmix( splitmix( s ^ w ) );   /* doble mezcla */
+}
