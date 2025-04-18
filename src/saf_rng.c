@@ -22,17 +22,17 @@ static inline uint64_t mix(uint64_t z){
 /*--------- API pública ---------------------------------------------------*/
 void saf_rng_seed(uint64_t seed){ s = seed; w = seed ^ INC; }
 
-/* salida de 64 bits — PractRand 1 GiB: no anomalies en todas las baterías */
 uint64_t saf_rng_u64(void){
-    s = tfunc(s);
-    w += INC;
+    s = tfunc(s);       /* paso T‑function */
+    w += INC;           /* contador Weyl   */
 
-    uint64_t z = mix(s ^ w);   /* 1ª mezcla ― difunde casi todo */
-    z ^= z >> 33;              /* ← copia el bit 0 a posiciones altas */
-    return mix(z);             /* 2ª mezcla ― borra la huella restante */
+    /* 1) usa  SUMA  en vez de XOR ⇒ el bit 0 deja de ser un cuadrado perfecto */
+    uint64_t z = s + w;
+
+    /* 2) doble mezcla xorshift* ⇒ difusión completa, coste +3 ciclos */
+    z = mix(z);
+    return mix(z);
 }
-
-
 
 /* utilidades */
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
