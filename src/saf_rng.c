@@ -7,10 +7,16 @@ static uint64_t w = 0;                       /* contador Weyl               */
 #define INC 0x9E3779B97F4A7C15ULL            /* φ·2^64                      */
 
 /*-------------- núcleo ----------------------------------------------------*/
+/* T‑function con multiplicación impar: difunde el bit 0 */
 static inline uint64_t tfunc(uint64_t x){
-    const uint64_t C = 0xDA3E39CB94B95BDBULL;
-    return x + ((x<<13) ^ (x>>7)) + C;
+    x ^= x >> 27;
+    x *= 0x3C79AC492BA7B653ULL;          /* constante impar */
+    x ^= x >> 33;
+    x *= 0x1C69B3F74AC4AE35ULL;          /* segunda impar   */
+    x ^= x >> 27;
+    return x;                            /* sin +C extra: ya es caótico */
 }
+
 
 /* SplitMix64 (round‑reduced) – barato y rompe paridad */
 static inline uint64_t smix(uint64_t z){
