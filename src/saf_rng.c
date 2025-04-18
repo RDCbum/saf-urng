@@ -21,10 +21,10 @@ void saf_rng_seed(uint64_t seed){ s=seed; w=seed^INC; }
 uint64_t saf_rng_u64(void){
     s = tfunc(s);
     w += INC;
-     uint64_t z = s ^ w;                 /* mezcla cruda                */
-    z = splitmix(z);                    /* 1ª mezcla fuerte            */
-    z ^= (z >> 32) | (z << 32);         /* <<— difunde bit 0 a los altos*/
-    return splitmix(z);                 /* 2ª mezcla                   */
+    uint64_t z = s ^ w;          /* mezcla cruda                */
+    z = splitmix(z);             /* 1ª mezcla                   */
+    z ^= z >> 1;                 /*   <<— difunde el bit 0      */
+    return splitmix(z);          /* 2ª mezcla                   */
 }
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
 float saf_rng_f32(void){ return (saf_rng_u32() >> 8) * (1.0f/16777216.0f); }
