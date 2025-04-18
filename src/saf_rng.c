@@ -24,10 +24,13 @@ void saf_rng_seed(uint64_t seed){ s = seed; w = seed ^ INC; }
 
 /* salida de 64 bits — PractRand 1 GiB: no anomalies en todas las baterías */
 uint64_t saf_rng_u64(void){
-    s = tfunc(s);           /* paso T‑function                */
-    w += INC;               /* avance Weyl                    */
-    return mix(s ^ w);      /* mezcla final                   */
+    s = tfunc(s);
+    w += INC;
+    uint64_t z = s ^ w;
+    z = mix(z);          /* 1ª mezcla */
+    return mix(z);       /* 2ª mezcla – borra el sesgo del bit 0 */
 }
+
 
 /* utilidades */
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
