@@ -36,7 +36,7 @@ uint64_t saf_rng_u64(void){
     uint64_t z = s ^ w;         /* mezcla cruda              */
     z = splitmix(z);            /* 1ª mezcla                 */
     z = splitmix(z ^ (z >> 1)); /* 2ª mezcla + romper paridad*/
-    return final_mix(z);        /* difunde y elimina sesgo   */
+    return z >> 2;   /* 62 bits limpios: bits 0‑1 descartados */
 }
 
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
