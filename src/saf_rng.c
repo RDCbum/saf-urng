@@ -27,9 +27,13 @@ void saf_rng_seed(uint64_t seed){ s=seed; w=seed^INC; }
 uint64_t saf_rng_u64(void){
     s = tfunc(s);
     w += INC;
-    uint64_t z = s ^ w;          /* mezcla cruda              */
-    return pcg_permute(z);       /* permutación final         */
+    uint64_t z = s ^ w ^ 0x1ULL;        // rompe paridad exacta
+    z = splitmix(z);
+    z ^= z >> 1;                        // copia bit 0 arriba
+    z = splitmix(z);
+    return z;
 }
+
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
 float saf_rng_f32(void){ return (saf_rng_u32() >> 8) * (1.0f/16777216.0f); }
 
