@@ -20,6 +20,7 @@ static inline uint64_t mix(uint64_t z){
 uint64_t saf_rng_u64(void){
     s = tfunc(s);
     w += INC;
-    uint64_t z = (s ^ w) ^ 0x1ULL;   /* ← añade ‘1’ para romper paridad exacta */
-    return splitmix(z);              /* difunde con SplitMix64     
+    uint64_t z = (s ^ w) ^ 0x1ULL;   /* rompe la paridad del bit 0 */
+    return splitmix(z);              /* SplitMix64 difunde todo    */
 }
+
