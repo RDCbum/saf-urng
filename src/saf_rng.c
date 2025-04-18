@@ -42,8 +42,13 @@ void saf_rng_seed(uint64_t seed){ s = seed; w = seed ^ INC; }
 uint64_t saf_rng_u64(void){
     s = tfunc(s);
     w += INC;
-    return smix(s + w) >> 2;   /* 62 bits limpios ⇒ PractRand “no anomalies” */
+
+    uint64_t z = smix(s + w);      /* 1ª difusión                     */
+    z = pcg_xsl_rr(z);             /* 1ª permutación PCG              */
+    z = pcg_xsl_rr(z);             /* 2ª permutación PCG (renueva bit0) */
+    return z >> 2;                 /* descarta 2 bits ‑‑ nada fijo    */
 }
+
 
 
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
