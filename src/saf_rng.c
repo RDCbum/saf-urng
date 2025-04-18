@@ -26,10 +26,12 @@ void saf_rng_seed(uint64_t seed){ s = seed; w = seed ^ INC; }
 uint64_t saf_rng_u64(void){
     s = tfunc(s);
     w += INC;
-    uint64_t z = s ^ w;
-    z = mix(z);          /* 1ª mezcla */
-    return mix(z);       /* 2ª mezcla – borra el sesgo del bit 0 */
+
+    uint64_t z = mix(s ^ w);   /* 1ª mezcla ― difunde casi todo */
+    z ^= z >> 33;              /* ← copia el bit 0 a posiciones altas */
+    return mix(z);             /* 2ª mezcla ― borra la huella restante */
 }
+
 
 
 /* utilidades */
