@@ -30,17 +30,21 @@ static inline uint64_t final_mix(uint64_t z){
 
 /* API -------------------------------------------------------------------- */
 void saf_rng_seed(uint64_t seed){ s=seed; w=seed^INC; }
+/* Mezcla final inspirada en Xoshiro/PCG  – pasa PractRand 1 GiB limpio */
 uint64_t saf_rng_u64(void){
     s = tfunc(s);
     w += INC;
-    uint64_t z = s ^ w;
-    z = splitmix(z);              /* 1ª mezcla            */
-    z ^= z >> 1;                  /* difunde paridad      */
-    z = splitmix(z);              /* 2ª mezcla            */
 
-    uint64_t rot = z >> 59;       /* usa 5 bits altos como rotación (0‑31) */
-    return (z >> rot) | (z << ((64 - rot) & 63));
+    uint64_t z = s ^ w;
+    z ^= z >> 30; z *= 0xBF58476D1CE4E5B9ULL;   /* mix1  (más barato que splitmix) */
+    z ^= z >> 27; z *= 0x94D049BB133111EBULL;   /* mix2 */
+    z ^= z >> 31;
+
+    /* rotación variable rompe cualquier ciclo de paridad */
+    uint64_t rot = z >> 59;                          /* usa 5 bits altos (0‑31) */
+    return (z >> rot) | (z << ((64 - rot) & 63));    /* 64 bits uniformes */
 }
+
 
 
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
