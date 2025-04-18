@@ -14,6 +14,5 @@ gen: $(SRC) examples/gen.c $(HDR)
 	$(CC) $(CFLAGS) $^ -o $@
 
 practrand: gen
-	./gen 134217728 | RNG_test.exe stdin64 -multithreaded > practrand.log
-	@echo "PractRand finished. Summary:"
-	@tail -n 5 practrand.log
+	./gen 134217728 | /c/prng/RNG_test.exe stdin64 -multithreaded > practrand.log
+	@echo "PractRand finished. Summary:" ; tail -n 5 practrand.log
