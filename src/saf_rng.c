@@ -22,16 +22,21 @@ static inline uint64_t pcg_permute(uint64_t x){
            (x ^ (x >> 32)) * 0xDA942042E4DD58B5ULL << 32;
 }
 
+static inline uint64_t final_mix(uint64_t z){
+    z ^= z >> 32;                           /* cruza alta/baja  */
+    z *= 0xD6E8FEB86659FD93ULL;            /* impar, difunde   */
+    return z >> 32;                        /* toma sólo parte alta (bit0 nuevo) */
+}
+
 /* API -------------------------------------------------------------------- */
 void saf_rng_seed(uint64_t seed){ s=seed; w=seed^INC; }
 uint64_t saf_rng_u64(void){
     s = tfunc(s);
     w += INC;
-    uint64_t z = s ^ w ^ 0x1ULL;        // rompe paridad exacta
-    z = splitmix(z);
-    z ^= z >> 1;                        // copia bit 0 arriba
-    z = splitmix(z);
-    return z;
+    uint64_t z = s ^ w;         /* mezcla cruda              */
+    z = splitmix(z);            /* 1ª mezcla                 */
+    z = splitmix(z ^ (z >> 1)); /* 2ª mezcla + romper paridad*/
+    return final_mix(z);        /* difunde y elimina sesgo   */
 }
 
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
