@@ -37,8 +37,11 @@ uint64_t saf_rng_u64(void){
     z = splitmix(z);              /* 1ª mezcla            */
     z ^= z >> 1;                  /* difunde paridad      */
     z = splitmix(z);              /* 2ª mezcla            */
-    return z >> 32;               /* ← devuelve 32 bits limpios */
+
+    uint64_t rot = z >> 59;       /* usa 5 bits altos como rotación (0‑31) */
+    return (z >> rot) | (z << ((64 - rot) & 63));
 }
+
 
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
 float saf_rng_f32(void){ return (saf_rng_u32() >> 8) * (1.0f/16777216.0f); }
