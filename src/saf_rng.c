@@ -33,10 +33,11 @@ void saf_rng_seed(uint64_t seed){ s=seed; w=seed^INC; }
 uint64_t saf_rng_u64(void){
     s = tfunc(s);
     w += INC;
-    uint64_t z = s ^ w;         /* mezcla cruda              */
-    z = splitmix(z);            /* 1ª mezcla                 */
-    z = splitmix(z ^ (z >> 1)); /* 2ª mezcla + romper paridad*/
-    return z >> 2;   /* 62 bits limpios: bits 0‑1 descartados */
+    uint64_t z = s ^ w;
+    z = splitmix(z);              /* 1ª mezcla            */
+    z ^= z >> 1;                  /* difunde paridad      */
+    z = splitmix(z);              /* 2ª mezcla            */
+    return z >> 32;               /* ← devuelve 32 bits limpios */
 }
 
 uint32_t saf_rng_u32(void){ return (uint32_t)saf_rng_u64(); }
