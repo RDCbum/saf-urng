@@ -12,19 +12,23 @@ static inline uint64_t tfunc(uint64_t x) {
     return x + ((x << 13) ^ (x >> 7)) + C;
 }
 /* 64‑bit PCG “xorshift*” — rompe paridad en 1 sola llamada */
-static inline uint64_t mix(uint64_t z) {
-    z ^= z >> 30;  z *= 0xBF58476D1CE4E5B9ULL;
-    z ^= z >> 27;  z *= 0x94D049BB133111EBULL;
-    return z ^ (z >> 31);
+/* Permutación de salida PCG‑XSL‑RR (64 bits, sin sesgo de bit 0) */
+static inline uint64_t pcg_output(uint64_t x){
+    x ^= x >> 27;  x *= 0x3C79AC492BA7B653ULL;   /* multiply 1 (impar) */
+    x ^= x >> 33;  x *= 0x1C69B3F74AC4AE35ULL;   /* multiply 2 (impar) */
+    x ^= x >> 27;
+    uint64_t rot = x >> 59;                      /* usa 5 bits altos   */
+    return (x >> rot) | (x << ((64 - rot) & 63));
 }
+
 
 /*------------- API -------------------------------------------------------*/
 void saf_rng_seed(uint64_t seed) { s = seed; w = seed ^ INC; }
 
-uint64_t saf_rng_u64(void) {
-    s = tfunc(s);          /* avance T‑function                 */
-    w += INC;              /* avance Weyl                       */
-    return mix(s + w);     /* *** S U M A  + 1×mix  — probado *** */
+uint64_t saf_rng_u64(void){
+    s = tfunc(s);     /* paso T‑function */
+    w += INC;         /* paso Weyl       */
+    return pcg_output(s + w);   /* ← SUMA  + permutación PCG */
 }
 
 uint32_t saf_rng_u32(void) { return (uint32_t)saf_rng_u64(); }
