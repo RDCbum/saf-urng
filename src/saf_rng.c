@@ -21,7 +21,7 @@ void saf_rng_seed(uint64_t seed){ s=seed; w=seed^INC; }
 uint64_t saf_rng_u64(void){
     s = tfunc(s);
     w += INC;
-   uint64_t z = s ^ w;              /* mezcla cruda               */
+    uint64_t z = s ^ w;              /* mezcla cruda               */
     z = splitmix(z);                 /* 1ª mezcla                  */
     z ^= z >> 1;                     /* difunde bit 0 → bit 1      */
     z ^= z >> 2;                     /* difunde bit 1 → bit 3      */
